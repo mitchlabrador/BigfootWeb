@@ -66,19 +66,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Scripts\bigfootbundle.js.bundle" />
     <None Include="Scripts\jquery-1.11.2.min.map" />
     <None Include="Scripts\jquery.form.min.js.map" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bigfootweb.css" />
+    <Content Include="Content\images\loading-spinner-grey.gif" />
     <Content Include="Scripts\bigfoot.js" />
-    <Content Include="Scripts\bigfootbundle.js">
-      <DependentUpon>bigfootbundle.js.bundle</DependentUpon>
-    </Content>
-    <Content Include="Scripts\bigfootbundle.min.js">
-      <DependentUpon>bigfootbundle.js</DependentUpon>
-    </Content>
     <Content Include="Scripts\jquery-1.11.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.11.2.js" />
     <Content Include="Scripts\jquery-1.11.2.min.js" />

@@ -1,7 +1,8 @@
 ﻿/* Custom Validation Methods */
-jQuery.validator.addMethod("dateGB", function (value, element) { return this.optional(element) || /(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d/.test(value); }, "Please enter a valid date!"); jQuery.validator.addClassRules("dateGB", { dateGB: true });
-jQuery.validator.addMethod("not", function(value, element, target) { return value != target; }, "Value must not be equal to {0}");
-
+if (jQuery.validator) {
+    jQuery.validator.addMethod("dateGB", function (value, element) { return this.optional(element) || /(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d/.test(value); }, "Please enter a valid date!"); jQuery.validator.addClassRules("dateGB", { dateGB: true });
+    jQuery.validator.addMethod("not", function (value, element, target) { return value != target; }, "Value must not be equal to {0}");
+}
 
 //*********************************************
 // bigfootMVC
@@ -25,33 +26,13 @@ var bf = {
     errorHappened: false,
 
     init: function () {
-        
-        // Create the alert overlay box
-        if (bf.exists(bf.constants.bigfootAlertId) == false) {
-            var alertHtml = "<div id='" + bf.constants.bigfootAlertId + "' style='display:none;'>" +
-                            "   <div class='alertTitle'></div>" +
-                            "   <div class='alertContent'></div>" +
-                            "   <div class='alertFooter'>" +
-                            "       <a href='javascript:bf.hideAlert();' class='okButton'>Ok</a>" +
-                            "   </div>" +
-                            "</div>";
-            var $container = $("form:eq(0)");
-            if ($container.length == 0) {
-                $container = $("body");
-            }
-            $container.append(alertHtml);
-        }
+        //bf.initAlertModals();
+        //bf.initSystemError();
+        bf.connectAjax();
+        bf.initModals();
+    },
 
-        // Create the system error overlay box
-        if (bf.exists(bf.constants.systemErrorId) == false)
-        {
-            var html = "<div id='" + bf.constants.systemErrorId + "'>";
-            html += "<a href='javascript:bf.hideError();void(0);' class='close'>CLOSE</a>";
-            html += "<iframe id='" + bf.constants.systemErrorIFrameId + "'></iframe>";
-            html += "</div>";
-            jQuery(html).appendTo("body");
-        }
-
+    initBlockUI: function () {
         // Wire up the escape event to make sure we unblock on the UI when pressed
         $(document).keyup(function (e) {
             if (e.which === 27) { // escape key
@@ -62,15 +43,15 @@ var bf = {
     },
 
     // Connect AJAX indicators and error handler when ajax is happening
-    connectAjax: function () {        
-                
+    connectAjax: function () {
+
         // Set a request header to flag every ajax request
         $(document).ajaxSend(function (ev, req, options) {
             req.setRequestHeader("ajaxRequest", "true");
         });
 
         // Mark the page as updating on every ajax call 
-        $(document).ajaxStart(function () {            
+        $(document).ajaxStart(function () {
             bf.blockUI();
         });
 
@@ -86,11 +67,83 @@ var bf = {
         });
 
         // Hide the Loading message on successful completion
-        $(document).ajaxSuccess(function (request, settings) {            
+        $(document).ajaxSuccess(function (request, settings) {
             bf.hideError();
             bf.unblockUI();
         });
     },
+
+    // Handles Bootstrap Modals.
+    initModals: function () {
+        // fix stackable modal issue: when 2 or more modals opened, closing one of modal will remove .modal-open class. 
+        $('body').on('hide.bs.modal', function () {
+            if ($('.modal:visible').size() > 1 && $('html').hasClass('modal-open') == false) {
+                $('html').addClass('modal-open');
+            } else if ($('.modal:visible').size() <= 1) {
+                $('html').removeClass('modal-open');
+            }
+        });
+
+        $('body').on('show.bs.modal', '.modal', function () {
+            if ($(this).hasClass("modal-scroll")) {
+                $('body').addClass("modal-open-noscroll");
+            }
+        });
+
+        $('body').on('hide.bs.modal', '.modal', function () {
+            $('body').removeClass("modal-open-noscroll");
+        });
+    },
+
+
+    //initAlertModals: function () {
+    //    // Create the alert overlay box
+    //    //if (bf.exists(bf.constants.bigfootAlertId) == false) {
+    //    //    var alertHtml = "<div id='" + bf.constants.bigfootAlertId + "' style='display:none;'>" +
+    //    //                    "   <div class='alertTitle'></div>" +
+    //    //                    "   <div class='alertContent'></div>" +
+    //    //                    "   <div class='alertFooter'>" +
+    //    //                    "       <a href='javascript:bf.hideAlert();' class='okButton'>Ok</a>" +
+    //    //                    "   </div>" +
+    //    //                    "</div>";
+    //    //    var $container = $("form:eq(0)");
+    //    //    if ($container.length == 0) {
+    //    //        $container = $("body");
+    //    //    }
+    //    //    $container.append(alertHtml);
+    //    //}
+    //},
+
+    //initSystemError: function () {
+    //    // Create the system error overlay box
+    //    if (bf.exists(bf.constants.systemErrorId) == false) {
+    //        //var modal = bf.loadContentInModal({
+    //        //    id: bf.constants.systemErrorId,
+    //        //    title: "System Error",
+    //        //    body: "<iframe id='" + bf.constants.systemErrorIFrameId + "'></iframe>"
+    //        //});
+    //        //$("body").append(modal.template);
+
+    //        //var html = "<div id='" + bf.constants.systemErrorId + "' class='modal fade' tabindex='-1' aria-hidden='true' aria-labelledby='systemErrorModalLabel'>";
+    //        //html += "   <div class='modal-dialog modal-lg'>";
+    //        //html += '   <div class="modal-content">';
+    //        //html += "       <div class='modal-header'>";
+    //        //html += '           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
+    //        //html += '           <h4 class="modal-title" id="systemErrorModalLabel">System Error</h4>';
+    //        //html += "       </div>";
+    //        //html += "       <div class='modal-body'>";
+    //        //html += "           <iframe id='" + bf.constants.systemErrorIFrameId + "'></iframe>";
+    //        //html += "       </div>";
+    //        //html += "   </div>";
+    //        //html += "   </div>";
+    //        //html += "</div>";
+    //        //jQuery(html).appendTo("body");
+    //    }
+    //},
+
+
+
+
 
     //#endregion
 
@@ -101,15 +154,18 @@ var bf = {
     //#region .blockUI | .unblockUI | .showError | .hideError
 
     hideError: function () {
-        jQuery("#" + bf.constants.systemErrorIFrameId).attr("src", "about:blank");
-        
-        //jQuery("#" + bf.constants.systemErrorId).bPopup().close();
-        if (jQuery("#" + bf.constants.systemErrorId).length > 0) {
-            jQuery("#" + bf.constants.systemErrorId).remove();
+        if (bf.isVisible(bf.constants.systemErrorId)) {
+            jQuery("#" + bf.constants.systemErrorIFrameId).attr("src", "about:blank");
+            jQuery("#" + bf.constants.systemErrorId).modal("hide");
         }
     },
 
     showError: function (msg) {
+        var modal = bf.loadContentInModal({
+            id: bf.constants.systemErrorId,
+            title: "System Error",
+            body: "<iframe id='" + bf.constants.systemErrorIFrameId + "'></iframe>"
+        });
         // Inject the html into the iframe
         var iframe = document.getElementById(bf.constants.systemErrorIFrameId);
         var doc = (iframe.contentDocument) ? iframe.contentDocument : iframe.contentWindow.document;
@@ -117,15 +173,24 @@ var bf = {
         doc.open();
         doc.writeln(msg);
         doc.close();
-
-        // show the error
-        jQuery("#" + bf.constants.systemErrorId).bPopup();
     },
-    
+
+    showAlert: function (title, message, _options) {
+        var options = {
+            title: title,
+            body: message,
+            showOk: true,
+            size: "small"
+        };
+        $.extend(options, _options);
+
+        return bf.loadContentInModal(options);
+    },
+
     blockUI: function (options) {
         var options = $.extend(true, {}, options);
         var html = '<div class="loading-message"><span class="spinner"></span><span>&nbsp;&nbsp;' + (options.message ? options.message : 'LOADING...') + '</span></div>';
-       
+
         if (options.target) { // element blocking
             var el = $(options.target);
             if (el.height() <= ($(window).height())) {
@@ -164,7 +229,7 @@ var bf = {
             });
         }
 
-        
+
     },
 
     unblockUI: function (target) {
@@ -187,81 +252,218 @@ var bf = {
     //******************************************************
     // OVERLAYS
     //******************************************************
-    
+
     //#region Overlays
 
-    showAlert: function (title, message, _options) {
+    getOverlayTemplate: function (options) {
+        /*
+            Options: 
+                id: id of the overlay
+                body: content
+                title: title for the overlay
+                size: [small | large] - size of the overlay
+                showClose: [true | false] - show the close button 
+                showOk: [true | false] - show the ok button
+                showCancel: [true | false] - show the cancel button
+                okButtonText: the text to display on the ok button
+                cancelButtonText: the text to display on the cancel button
+                footerContent: Content to include in the footer
+                annimation: default: fade - the annimation to display when opening and closing the box 
+                cssClass: css class to apply to the top div of the overlay
+        */
 
-        // Create the default options
-        var options = {
-            modal: true,
-            modalClose: false,
-            escClose: false,
-            modalColor: "whitesmoke"
+        // Create the defaults and merge in the options
+        var data = {
+            id: bf.generateUID(),
+            size: "large",
+            showClose: true,
+            showOk: false,
+            showCancel: false,
+            okButtonText: 'Ok',
+            cancelButtonText: 'Cancel',
+            annimation: "fade"
         };
+        $.extend(data, options);
+        data.showHeader = data.title || data.showClose;
+        data.showFooter = data.showOk || data.showCancel || data.footerContent;
+        data.sizeClass = data.size == "small" ? "modal-sm" : "modal-lg";
+        data.okId = data.id + "ok";
+        data.cancelId = data.id + "cancel";
 
-        // Create the alert box and append the titla and content
-        var $alert = bf.id(bf.constants.bigfootAlertId);
-        $alert.find(".alertTitle").html(title);
-        $alert.find(".alertContent").html(message);
-
-        // Merge the caller parameters options parameter
-        if (_options) { $.extend(options, _options); }
-
-        // shhow the alert with options
-        $alert.bPopup(options);
-
-    },
-
-    hideAlert: function(){
-        var $alert = bf.id(bf.constants.bigfootAlertId);        
-        $alert.bPopup().close();
-    },
-
-    popupHtml: "<div class='b-overlay' style='display:none;'>" +
-               "   <a href='javascript:void(0);' class='closeOverlay'>X</a>" +
-               "   <div class='overlayContent'></div>" +
-               "   </div>" +
-               "</div>",
-
-    loadUrlInOverlay: function (url, _options)
-    {
-        $.get(url, function (data) { return bf.loadContentInOverlay(data, _options); });
-    },
-
-    loadContentInOverlay: function (content, _options)
-    {
-        // Create the default options
-        var options = {
-            closeClass: "closeOverlay",
-            appendTo: "form",
-            modal: true,
-            modalClose: false,
-            transition: 'slideDown'
+        var html =
+        '<div id="{{id}}" class="modal {{annimation}} {{cssClass}}" tabindex="-1" aria-hidden="true" aria-labelledby="{{id}}ModalLabel">' +
+        '<div class="modal-dialog {{sizeClass}}">' +
+        '   <div class="modal-content">' +
+        '       {{if showHeader}}' +
+        '       <div class="modal-header">' +
+        '           {{if showClose}}<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>{{/if}}' +
+        '           {{if title|notempty}}' +
+        '           <h4 class="modal-title" id="{{id}}ModalLabel">{{title}}</h4>' +
+        '           {{/if}}' +
+        '       </div>' +
+        '       {{/if}}' +
+        '       <div class="modal-body">' +
+        '           {{body}}' +
+        '       </div>' +
+        '       {{if showFooter}}' +
+        '       <div class="modal-footer">' +
+        '           {{if footerContent|notempty}}{{footerContent}}{{/if}}' +
+        '           {{if showOk}}<button type="button" id="{{okId}}" class="btn btn-primary" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">{{okButtonText}}</span></button>{{/if}}' +
+        '           {{if showCancel}}<button type="button" id="{{cancelId}}" class="btn" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">{{cancelButtonText}}</span></button>{{/if}}' +
+        '       </div>' +
+        '       {{/if}}' +
+        '   </div>' +
+        '   </div>' +
+        '</div>'
+        return {
+            template: Mark.up(html, data),
+            data: data
         };
+    },
 
-        // Merge the caller parameters options parameter
-        if (_options) { $.extend(options, _options); }
+    loadUrlInModal: function (options) {
+        $.get(url, function (data) {
+            options.body = data;
+            bf.loadContentInModal(data, options);
+        });
+    },
 
-        // Create the overlay contianer
-        var $overlay = $(bf.popupHtml);
+    loadContentInModal: function (options) {
+        /*
+            Options: 
+                TEMPLATE:
+                id: id of the overlay
+                body: content
+                title: title for the overlay
+                size: [small | large] - size of the overlay
+                showClose: [true | false] - show the close button 
+                showOk: [true | false] - show the ok button
+                showCancel: [true | false] - show the cancel button
+                okButtonText: the text to display on the ok button
+                cancelButtonText: the text to display on the cancel button
+                footerContent: Content to include in the footer
+                annimation: default: fade - the annimation to display when opening and closing the box 
+                cssClass: css class to apply to the top div of the overlay
+                OVERLAY:
+                openIfExists: default: false - if the modal exists, then it opens it rather than removing it and creating a new one
+                destroyOnClose: default: true - if set to true when the markup is removed on close
+                closedCallback: function to call back on close after transition has finished
+                shownCallback: function to call back after the box is shown and transitions have finished
+                containerSelector: default: body - The id of the container for the box
+                okCallback: function to call on ok button press
+                cancelCallback: function to call on cancel callback
+        */
 
-        // Set the content
-        $overlay.find(".overlayContent").html(content);
+        // Create the defaults and merge in the options
+        var data = {
+            openIfExists: false,
+            destroyOnClose: true,
+            containerSelector: "body"
+        };
+        $.extend(data, options);
 
-        // set the width and height
-        if (options.width) { $overlay.css("width", options.width); }
-        if (options.height) { $overlay.css("height", options.height); }
+        // Get the template
+        var modalInfo = bf.getOverlayTemplate(options);
 
-        // Remove overlay element on close
-        options.onClose = function () {
-            $overlay.remove();
-            if (_options.onClose && typeof _options.onClose == 'function') { _options.onClose(); }
+        // Open if exists
+        if (data.openIfExists && bf.exists(modalInfo.data.id)) {
+            bf.id(modalInfo.data.id).modal();
+            modalInfo.$modal = bf.id(modalInfo.data.id);
+            return modalInfo;
         }
 
-        // Load it
-        return $overlay.bPopup(options).reposition();
+        // Add the modal to the Body
+        $(data.containerSelector).append(modalInfo.template);
+        var $modal = bf.id(modalInfo.data.id);
+        modalInfo.$modal = $modal;
+
+        // Destroy on close
+        if (data.destroyOnClose) {
+            $modal.on("hidden.bs.modal", function () { $modal.remove(); })
+        }
+
+        // Close callback
+        if (data.closedCallback) {
+            $modal.on("hidden.bs.modal", data.closedCallback);
+        }
+
+        // Shown callback
+        if (data.shownCallback) {
+            $modal.on("shown.bs.modal", data.shownCallback);
+        }
+
+        // Setup Ok and Cancel event triggers
+        if (modalInfo.data.showOk) {
+            bf.id(modalInfo.data.okId).click(function () { $modal.trigger("ok.bs.modal"); })
+        }
+        if (modalInfo.data.showCancel) {
+            bf.id(modalInfo.data.cancelId).click(function () { $modal.trigger("cancel.bs.modal"); })
+        }
+
+        // Ok callback
+        if (data.okCallback) {
+            $modal.on("ok.bs.modal", data.okCallback);
+        }
+
+        // Cancel callback
+        if (data.cancelCallback) {
+            $modal.on("cancel.bs.modal", data.cancelCallback);
+        }
+
+        // Show the modal
+        $modal.modal();
+
+        // Return the modal information        
+        return modalInfo;
     },
+
+    //hideAlert: function () {
+    //    var $alert = bf.id(bf.constants.bigfootAlertId);
+    //    $alert.bPopup().close();
+    //},
+
+    //popupHtml: "<div class='b-overlay' style='display:none;'>" +
+    //           "   <a href='javascript:void(0);' class='closeOverlay'>X</a>" +
+    //           "   <div class='overlayContent'></div>" +
+    //           "   </div>" +
+    //           "</div>",
+
+    //loadUrlInOverlay: function (url, _options) {
+    //    $.get(url, function (data) { return bf.loadContentInOverlay(data, _options); });
+    //},
+
+    //loadContentInOverlay: function (content, _options) {
+    //    // Create the default options
+    //    var options = {
+    //        closeClass: "closeOverlay",
+    //        appendTo: "form",
+    //        modal: true,
+    //        modalClose: false,
+    //        transition: 'slideDown'
+    //    };
+
+    //    // Merge the caller parameters options parameter
+    //    if (_options) { $.extend(options, _options); }
+
+    //    // Create the overlay contianer
+    //    var $overlay = $(bf.popupHtml);
+
+    //    // Set the content
+    //    $overlay.find(".overlayContent").html(content);
+
+    //    // set the width and height
+    //    if (options.width) { $overlay.css("width", options.width); }
+    //    if (options.height) { $overlay.css("height", options.height); }
+
+    //    // Remove overlay element on close
+    //    options.onClose = function () {
+    //        $overlay.remove();
+    //        if (_options.onClose && typeof _options.onClose == 'function') { _options.onClose(); }
+    //    }
+
+    //    // Load it
+    //    return $overlay.bPopup(options).reposition();
+    //},
 
     //#endregion
 
@@ -274,6 +476,11 @@ var bf = {
     generateGuid: function () {
         var S4 = function () { return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1); }
         return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
+    },
+
+    generateUID: function () {
+        var S4 = function () { return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1); }
+        return (S4() + S4() + S4() + S4() + S4() + S4() + S4() + S4());
     },
 
     log: function (msg) {
@@ -378,7 +585,7 @@ var bf = {
     //ADD A SELECT OPTION AND SELECT IT 
     AddSelectOption: function (field, key, text, selected) {
         var html = "<option";
-        if (selected == true) html += " selected = 'selected'"; 
+        if (selected == true) html += " selected = 'selected'";
         html += "></option>";
         jQuery('#' + field).append(jQuery(html).attr("value", key).text(text));
     },
@@ -393,12 +600,12 @@ var bf = {
         else
             return results[1];
     },
-    
+
     ChangeCallback: function (elemIds, callback) {
         var elems = elemIds.split(",");
 
         var selString = "";
-    
+
         for (var i = 0; i < elems.length; i++) {
             var id = elems[i].trim();
             if (id.length == 0) continue;
@@ -414,7 +621,7 @@ var bf = {
                     continue;
                 }
             }
-        
+
             // Add it to the list
             if (selString.length > 0) selString += ", ";
             selString += selector;
@@ -424,8 +631,7 @@ var bf = {
 
     loadUrl: function (url, elementId, toggle) {
 
-        if (toggle && bf.isVisible(elementId))
-        {
+        if (toggle && bf.isVisible(elementId)) {
             bf.id(elementId).html("").hide();
             return;
         }
@@ -449,7 +655,7 @@ var bf = {
         return "{0} :input, {0} select, {0} textarea".format(bf.formatAsJQId(formId));
     },
 
-    validatePartialForm: function(formId, evt) {
+    validatePartialForm: function (formId, evt) {
         ///	<summary>
         ///		Validates a set of inputs contained within a certain element id
         ///	</summary>
@@ -459,17 +665,17 @@ var bf = {
         var selector = bf.createFormElementSelector(formId);
 
         // Validate each field in the container
-        jQuery(selector).each(function(){ 
-            if (!$(this).valid()) isValid = false; 
+        jQuery(selector).each(function () {
+            if (!$(this).valid()) isValid = false;
         });
 
         // When handling validation on an enter handler, rememver to prevent the default enter on the form
         if (!isValid && evt) evt.preventDefault();
 
         // Return wheter it is valid or not
-        return isValid;    
+        return isValid;
     },
-        
+
     createPartialForm: function (formId) {
         ///	<summary>
         ///		Creates a partial form from an ordinary html element id such as a div. 
@@ -543,25 +749,23 @@ var bf = {
             showElement: "",
             removeClassFromElement: "",
             removeClassFromElementClassNames: "",
-            focus: ""            
+            focus: ""
         };
 
         // Merge the caller parameters options parameter
         $.extend(options, arguments[1]);
-        
+
         // Serialize the partial form into the postData
         if (options.formId != "") {
-            options.formId = bf.formatAsJQId(options.formId);            
-            if (options.isPartialForm)
-            {
+            options.formId = bf.formatAsJQId(options.formId);
+            if (options.isPartialForm) {
                 $.extend(options.postData, bf.serializePartialForm(options.formId));
             }
-            else
-            {
+            else {
                 $.extend(options.postData, $(options.formId).formToArray());
             }
         }
-        
+
         // Validate
         if (options.formId != "" && options.validate) {
             var isValid = false;
@@ -583,7 +787,7 @@ var bf = {
         $.ajax({
             url: options.url,
             type: options.method,
-            data: options.postData, 
+            data: options.postData,
             success: function (data, status, jqXHR) {
                 //debugger;
                 // Update panel
@@ -615,7 +819,7 @@ var bf = {
                 if (options.removeClassFromElement != "" && options.removeClassFromElementClassNames != "") {
                     bf.id(options.removeClassFromElement).removeClass(options.removeClassFromElementClassNames);
                 }
-                
+
                 // Clear the form and associated validation
                 if (options.clearForm == true && options.formId != "") {
                     var fieldSelector = bf.createFormElementSelector(options.formId);
@@ -661,7 +865,7 @@ var bf = {
     },
 
     //#endregion
-    
+
     //#region submitForm | submitParentForm
 
     submitParentForm: function (elem /*, options*/) {
@@ -677,7 +881,7 @@ var bf = {
         /// Submits the form with the id specified. You may also pass a jquery object with the form selected
         ///</summary>        
         //debugger;
-        var options = {            
+        var options = {
             validate: true,
             validatePartialFormId: "",
             viaAjax: false,
@@ -704,9 +908,9 @@ var bf = {
                 isValid = $form.validate({ onsubmit: false, debug: false }).form();
             }
             // Cancel if not valid
-            if (!isValid) { return; }                
+            if (!isValid) { return; }
         }
-        
+
 
         // Submit the form
         if (options.viaAjax) {
@@ -722,14 +926,14 @@ var bf = {
         }
         else {
             // Trigger the parent form submit
-           $form.trigger("submit");
+            $form.trigger("submit");
         }
 
     }
 
     //#endregion
-    
-    
+
+
 };
 
 
@@ -743,11 +947,11 @@ String.prototype.format = function () {
     }
     return s;
 };
-String.prototype.startsWith = function(str) { return (this.match("^" + str) == str); };
-String.prototype.endsWith = function(str) { return (this.match(str + "$") == str); };
-String.prototype.trim = function () { return (this.replace( /^[\s\xA0]+/ , "").replace( /[\s\xA0]+$/ , "")); };
-String.prototype.ltrim = function() { return this.replace( /^\s+/ , ""); };
-String.prototype.rtrim = function() { return this.replace( /\s+$/ , ""); };
+String.prototype.startsWith = function (str) { return (this.match("^" + str) == str); };
+String.prototype.endsWith = function (str) { return (this.match(str + "$") == str); };
+String.prototype.trim = function () { return (this.replace(/^[\s\xA0]+/, "").replace(/[\s\xA0]+$/, "")); };
+String.prototype.ltrim = function () { return this.replace(/^\s+/, ""); };
+String.prototype.rtrim = function () { return this.replace(/\s+$/, ""); };
 String.prototype.contains = function (it) { return this.indexOf(it) != -1; };
 //#endregion
 
@@ -845,7 +1049,7 @@ var dateFormat = function () {
             return $0 in flags ? flags[$0] : $0.slice(1, $0.length - 1);
         });
     };
-} ();
+}();
 
 // Some common format strings
 dateFormat.masks = {
@@ -892,23 +1096,23 @@ var CheckIf = {
         //Format expected is mm/dd/yyyy
         var newDate = new Date(d);
         var isValidDate = !isNaN(newDate) && !CheckIf.IsEmptyString(d);
-        if(isValidDate){
+        if (isValidDate) {
             //check the values entered are the ones received
             //This will fix the issue that makes javascript convert invalid dates
             var splitDate = d.split("/");
             if (
-                    splitDate.length != 3 
+                    splitDate.length != 3
                     ||
                     (
-                        (newDate.getDate() != splitDate[0] || newDate.getMonth()+1 != splitDate[1]) 
-                        && 
-                        (newDate.getDate() != splitDate[1] || newDate.getMonth()+1 != splitDate[0])
+                        (newDate.getDate() != splitDate[0] || newDate.getMonth() + 1 != splitDate[1])
+                        &&
+                        (newDate.getDate() != splitDate[1] || newDate.getMonth() + 1 != splitDate[0])
                     )
                     ||
                     newDate.getFullYear() != splitDate[2]
-                ){
-                    isValidDate= false;
-                }
+                ) {
+                isValidDate = false;
+            }
 
 
         }
@@ -937,17 +1141,17 @@ function val(elemId, setValue) {
     if ($elem.length == 0) return "";
 
     // Try to get a radio list if not found
-    if ($elem.length == 0)  $elem = $('input:radio[name=' + elemId + ']');
+    if ($elem.length == 0) $elem = $('input:radio[name=' + elemId + ']');
 
     // Determine if it is a radio
     var isRadio = $elem.is(":radio");
-    
+
     // Determine if it is a checkbox
     var isCheckbox = $elem.is(":checkbox");
 
     if (isRadio) {
         //$elem.removeAttr("checked");
-        if(setValue != undefined) $elem.filter("[value='" + setValue + "']").attr("checked", "checked");
+        if (setValue != undefined) $elem.filter("[value='" + setValue + "']").attr("checked", "checked");
         return $elem.filter(":checked").val();
     }
     else if (isCheckbox) {
@@ -957,8 +1161,7 @@ function val(elemId, setValue) {
     else {
         // Figure out if you are trying to get or set the value of something other than input, textarea, or select
         var tagName = $elem.get(0).tagName.toLowerCase();
-        if (tagName != "input" && tagName != "textarea" && tagName != "select")
-        {
+        if (tagName != "input" && tagName != "textarea" && tagName != "select") {
             if (setValue != undefined) $elem.text(setValue);
             return $elem.text();
         }

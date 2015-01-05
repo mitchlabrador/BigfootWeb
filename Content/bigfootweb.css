@@ -3,34 +3,17 @@
 ******************************************************/
 
 /* SYSTEM ERROR */
-#bigfootMVC_SystemError {
-    display: none;
-    z-index: 50000;
-    width: 700px;
-    height: 500px;
-    background-color: #FFF;
-    border: 10px solid #892727;
-    -moz-box-shadow: 0 0 30px 5px #000;
-    -webkit-box-shadow: 0 0 30px #000;
-    box-shadow: 0 0 30px 5px #000;
+#bigfoot_SystemError .modal-header {
+    background-color: rgb(237, 88, 88);
+    color: white;
 }
 
-    #bigfootMVC_SystemError iframe {
-        width: 700px;
-        height: 500px;
-    }
-
-    #bigfootMVC_SystemError a.close {
-        background-color: Black;
-        color: White;
-        font-size: 14px;
-        font-weight: bold;
-        position: absolute;
-        top: 0px;
-        right: 0px;
-        padding: 5px;
-        text-decoration: none;
-    }
+#bigfoot_SystemError iframe {
+    width: 100%;
+    height: 500px;
+    border: none;
+    /*border:1px solid red;*/
+}
 
 /* ERROR MESSAGES */
 .error {color:Red; font-family:Verdana;}
@@ -39,46 +22,6 @@ label.error { font-weight:normal !important; font-size: 12px!important; float: n
 /*PLACEHOLDER*/
 .placeholder { color: #969696; }
 .placeholderFocus { color: #000; }
-
-
-/*ALERT*/
-#bigfootDnnAlert {
-    background: white;
-    min-width: 300px;
-    -webkit-box-shadow: 2px 2px 15px 0px rgba(83, 50, 96, 0.5);
-    -moz-box-shadow: 2px 2px 15px 0px rgba(83, 50, 96, 0.5);
-    box-shadow: 2px 2px 15px 0px rgba(83, 50, 96, 0.5);
-}
-
-    #bigfootDnnAlert .alertTitle {
-        padding: 15px 10px 15px 10px;
-        font-size: large;
-        background-color: lightblue;
-        border-bottom: 2px solid rgb(101, 175, 194);
-    }
-
-    #bigfootDnnAlert .alertContent {
-        padding: 10px;
-        min-height: 75px;
-    }
-
-    #bigfootDnnAlert .alertFooter {
-        padding: 10px;
-        background-color: lightgrey;
-        text-align: center;
-        border-top: 2px solid rgb(101, 175, 194);
-    }
-
-        #bigfootDnnAlert .alertFooter .okButton {
-            font-size: medium;
-            font-weight: bold;
-            padding: 5px 10px 5px 10px;
-            background-color: lightblue;
-            color: black;
-            border: 3px solid rgb(101, 175, 194);
-            width: 40px;
-            display: inline-block;
-        }
 
 /*OVERLAY*/
 .b-overlay {
@@ -125,7 +68,7 @@ UI Loading
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
 }
 .loading-message .spinner {
-    background-image: url('../images/loading-spinner-grey.gif');
+    background-image: url('images/loading-spinner-grey.gif');
     width:22px;
     height:22px;
     display:inline-block;

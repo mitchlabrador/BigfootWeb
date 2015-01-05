@@ -112,7 +112,7 @@ namespace BigfootWeb.Helpers
         /// </summary>
         /// <param name="name">paramater name</param>
         /// <returns>Convers the parameter value to an int</returns>
-        public int GetValueOrErrorAsInt(string name)
+        public int GetIntOrError(string name)
         {
             RequireValue(name);
             return GetInt(name).Value;
@@ -123,7 +123,7 @@ namespace BigfootWeb.Helpers
         /// </summary>
         /// <param name="name">paramater name</param>
         /// <returns>Convers the parameter value to a double</returns>
-        public double GetValueOrErrorAsDouble(string name)
+        public double GetDoubleOrError(string name)
         {
             RequireValue(name);
             return GetDouble(name).Value;
@@ -134,7 +134,7 @@ namespace BigfootWeb.Helpers
         /// </summary>
         /// <param name="name">paramater name</param>
         /// <returns>Convers the parameter value to a double</returns>
-        public long GetValueOrErrorAsLong(string name)
+        public long GetLongOrError(string name)
         {
             RequireValue(name);
             return GetLong(name).Value;
@@ -145,7 +145,7 @@ namespace BigfootWeb.Helpers
         /// </summary>
         /// <param name="name">paramater name</param>
         /// <returns>Convers the parameter value to a double</returns>
-        public decimal GetValueOrErrorAsDecimal(string name)
+        public decimal GetDecimalOrError(string name)
         {
             RequireValue(name);
             return GetDecimal(name).Value;
@@ -156,7 +156,7 @@ namespace BigfootWeb.Helpers
         /// </summary>
         /// <param name="name">paramater name</param>
         /// <returns>Convers the parameter value to a date</returns>
-        public DateTime GetValueOrErrorAsDate(string name)
+        public DateTime GetDateOrError(string name)
         {
             RequireValue(name);
             return GetDate(name).Value;
@@ -460,7 +460,7 @@ namespace BigfootWeb.Helpers
         /// </summary>
         /// <param name="file">File to be validated</param>
         /// /// <param name="maxFilesize">Max file size in bytes</param>
-        public void validateFileMaxFileSize(double maxFilesize)
+        public void ValidateFileMaxFileSize(double maxFilesize)
         {
             if (Files.Count > 0)
             {
