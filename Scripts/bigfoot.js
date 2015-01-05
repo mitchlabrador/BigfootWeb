@@ -95,56 +95,6 @@ var bf = {
         });
     },
 
-
-    //initAlertModals: function () {
-    //    // Create the alert overlay box
-    //    //if (bf.exists(bf.constants.bigfootAlertId) == false) {
-    //    //    var alertHtml = "<div id='" + bf.constants.bigfootAlertId + "' style='display:none;'>" +
-    //    //                    "   <div class='alertTitle'></div>" +
-    //    //                    "   <div class='alertContent'></div>" +
-    //    //                    "   <div class='alertFooter'>" +
-    //    //                    "       <a href='javascript:bf.hideAlert();' class='okButton'>Ok</a>" +
-    //    //                    "   </div>" +
-    //    //                    "</div>";
-    //    //    var $container = $("form:eq(0)");
-    //    //    if ($container.length == 0) {
-    //    //        $container = $("body");
-    //    //    }
-    //    //    $container.append(alertHtml);
-    //    //}
-    //},
-
-    //initSystemError: function () {
-    //    // Create the system error overlay box
-    //    if (bf.exists(bf.constants.systemErrorId) == false) {
-    //        //var modal = bf.loadContentInModal({
-    //        //    id: bf.constants.systemErrorId,
-    //        //    title: "System Error",
-    //        //    body: "<iframe id='" + bf.constants.systemErrorIFrameId + "'></iframe>"
-    //        //});
-    //        //$("body").append(modal.template);
-
-    //        //var html = "<div id='" + bf.constants.systemErrorId + "' class='modal fade' tabindex='-1' aria-hidden='true' aria-labelledby='systemErrorModalLabel'>";
-    //        //html += "   <div class='modal-dialog modal-lg'>";
-    //        //html += '   <div class="modal-content">';
-    //        //html += "       <div class='modal-header'>";
-    //        //html += '           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
-    //        //html += '           <h4 class="modal-title" id="systemErrorModalLabel">System Error</h4>';
-    //        //html += "       </div>";
-    //        //html += "       <div class='modal-body'>";
-    //        //html += "           <iframe id='" + bf.constants.systemErrorIFrameId + "'></iframe>";
-    //        //html += "       </div>";
-    //        //html += "   </div>";
-    //        //html += "   </div>";
-    //        //html += "</div>";
-    //        //jQuery(html).appendTo("body");
-    //    }
-    //},
-
-
-
-
-
     //#endregion
 
 
@@ -416,55 +366,7 @@ var bf = {
         // Return the modal information        
         return modalInfo;
     },
-
-    //hideAlert: function () {
-    //    var $alert = bf.id(bf.constants.bigfootAlertId);
-    //    $alert.bPopup().close();
-    //},
-
-    //popupHtml: "<div class='b-overlay' style='display:none;'>" +
-    //           "   <a href='javascript:void(0);' class='closeOverlay'>X</a>" +
-    //           "   <div class='overlayContent'></div>" +
-    //           "   </div>" +
-    //           "</div>",
-
-    //loadUrlInOverlay: function (url, _options) {
-    //    $.get(url, function (data) { return bf.loadContentInOverlay(data, _options); });
-    //},
-
-    //loadContentInOverlay: function (content, _options) {
-    //    // Create the default options
-    //    var options = {
-    //        closeClass: "closeOverlay",
-    //        appendTo: "form",
-    //        modal: true,
-    //        modalClose: false,
-    //        transition: 'slideDown'
-    //    };
-
-    //    // Merge the caller parameters options parameter
-    //    if (_options) { $.extend(options, _options); }
-
-    //    // Create the overlay contianer
-    //    var $overlay = $(bf.popupHtml);
-
-    //    // Set the content
-    //    $overlay.find(".overlayContent").html(content);
-
-    //    // set the width and height
-    //    if (options.width) { $overlay.css("width", options.width); }
-    //    if (options.height) { $overlay.css("height", options.height); }
-
-    //    // Remove overlay element on close
-    //    options.onClose = function () {
-    //        $overlay.remove();
-    //        if (_options.onClose && typeof _options.onClose == 'function') { _options.onClose(); }
-    //    }
-
-    //    // Load it
-    //    return $overlay.bPopup(options).reposition();
-    //},
-
+    
     //#endregion
 
 
