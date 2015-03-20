@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BigfootWeb.Helpers
+namespace Bigfoot.Web.Helpers
 {
     public interface IContext
     {

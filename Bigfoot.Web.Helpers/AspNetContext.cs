@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace BigfootWeb.Helpers
+namespace Bigfoot.Web.Helpers
 {
     public class AspNetContext : IContext
     {

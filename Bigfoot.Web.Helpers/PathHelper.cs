@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 
-namespace BigfootWeb.Helpers
+namespace Bigfoot.Web.Helpers
 {
 
     public class PathHelper

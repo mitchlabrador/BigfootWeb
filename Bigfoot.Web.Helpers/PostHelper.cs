@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Web;
 using System.Reflection;
 
-namespace BigfootWeb.Helpers
+namespace Bigfoot.Web.Helpers
 {
 
     /// <summary>

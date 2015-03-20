@@ -12,7 +12,7 @@ using System.Globalization;
 using System.Text;
 using System.Web;
 
-namespace BigfootWeb.Helpers
+namespace Bigfoot.Web.Helpers
 {
 
     #region HtmlHelper

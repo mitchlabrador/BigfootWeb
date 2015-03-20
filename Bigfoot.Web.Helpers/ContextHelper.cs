@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Web;
 
-namespace BigfootWeb.Helpers
+namespace Bigfoot.Web.Helpers
 {
     public class ContextHelper
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
 
-namespace BigfootWeb.Helpers
+namespace Bigfoot.Web.Helpers
 {
     /// <summary>
     /// This is a global application cache that persists accross requests while the application lives. Please takenote that it is server specific

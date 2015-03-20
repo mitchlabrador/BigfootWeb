@@ -6,7 +6,7 @@ using System.Text;
 using Newtonsoft.Json;
 //using System.Web.Script.Serialization;
 
-namespace BigfootWeb.Helpers
+namespace Bigfoot.Web.Helpers
 {
     public class Serializer
     {

@@ -2,7 +2,7 @@
 using System.Text;
 using System.Web;
 
-namespace BigfootWeb.Helpers
+namespace Bigfoot.Web.Helpers
 {
 
     /// <summary>

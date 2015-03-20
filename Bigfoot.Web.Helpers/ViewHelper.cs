@@ -1,6 +1,6 @@
 ﻿using System.Web;
 
-namespace BigfootWeb.Helpers
+namespace Bigfoot.Web.Helpers
 {
     public class ViewHelper
     {
