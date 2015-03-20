@@ -33,9 +33,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BigfootSQL">
-      <HintPath>..\packages\BigfootSQL.1.0.1\lib\net40\BigfootSQL.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -78,6 +75,10 @@
     <ProjectReference Include="..\Bigfoot.Utils\Bigfoot.Utils.csproj">
       <Project>{5038ab87-f496-441b-8a31-3d56938e0a42}</Project>
       <Name>Bigfoot.Utils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BigfootSQL\BigfootSQL.csproj">
+      <Project>{ad3f5fa1-c812-40f4-a981-18afb4142e01}</Project>
+      <Name>BigfootSQL</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
