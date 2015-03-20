@@ -12,7 +12,7 @@ The Bigfoot project is made of of several individual efforts:
 
 - **Bigfoot.Utils**: A collection of common extensions and utilities that may be used accross all .net projects
 
-Below is a detailed description of each. **They are all available as individual Nuget Packages.**
+Below is a detailed description of each. **They are all available as individual Nuget Packages using their corresponding names.**
 
 
 BigfootSQL
