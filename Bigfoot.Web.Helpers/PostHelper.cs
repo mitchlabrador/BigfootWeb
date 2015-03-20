@@ -352,6 +352,17 @@ namespace Bigfoot.Web.Helpers
         }
 
         /// <summary>
+        /// Requires that a certain parameter be present in the request
+        /// </summary>
+        /// <param name="name">paramater name</param>
+        /// <returns>Convers the parameter value to a boolean</returns>
+        public bool GetBoolOrError(string name)
+        {
+            RequireValue(name);
+            return GetBool(name);
+        }
+
+        /// <summary>
         /// Returns a list of integers from 
         /// </summary>
         /// <param name="data">The string of ints i.e. "1,2,3,4"</param>
