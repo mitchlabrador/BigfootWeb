@@ -36,9 +36,6 @@
     <Reference Include="BigfootSQL">
       <HintPath>..\packages\BigfootSQL.1.0.1\lib\net40\BigfootSQL.dll</HintPath>
     </Reference>
-    <Reference Include="BigfootUtils">
-      <HintPath>..\packages\BigfootUtils.1.0.0\lib\net40\BigfootUtils.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -76,6 +73,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Bigfoot.Utils\Bigfoot.Utils.csproj">
+      <Project>{5038ab87-f496-441b-8a31-3d56938e0a42}</Project>
+      <Name>Bigfoot.Utils</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

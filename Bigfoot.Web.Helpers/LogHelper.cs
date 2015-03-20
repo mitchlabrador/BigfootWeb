@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using BigfootUtils.Extensions;
+using Bigfoot.Utils.Extensions;
 
 namespace Bigfoot.Web.Helpers
 {
