@@ -12,6 +12,12 @@
         <ProjectGuid>d26e48a7-5c65-4a88-b3a7-551921c7e349</ProjectGuid>
         
         <PackageVersion>1.0.0</PackageVersion>
+        
+        <Authors>Mitch Labrador</Authors>
+        
+        <Company>Mitmar</Company>
+        
+        <Product>BigfootSQL</Product>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -19,6 +25,10 @@
       <DocumentationFile>bin\Release\BigfootSQL.Core.xml</DocumentationFile>
       <noWarn>1591</noWarn>
     </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.Data.SqlClient" Version="4.6.1" />
+    </ItemGroup>
 
 
 </Project>

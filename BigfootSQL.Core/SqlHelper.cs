@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
@@ -26,14 +27,14 @@ namespace BigfootSQL.Core
 	/// 
 	/// Examples (Assumes there is a DB variable of type SqlHelper):
 	///     Select a list of orders:
-	///         List OrderListItem obj;
-	///         obj = DB.SELECT("OrderID, OrderDate, ShipToCity").FROM("Orders").WHERE("ShipToState","FL").ExecuteCollection OrderListItem();
+	///         List &lt; OrderListItem &gt; obj;
+	///         obj = DB.SELECT("OrderID, OrderDate, ShipToCity").FROM("Orders").WHERE("ShipToState","FL").ExecuteCollection &lt; OrderListItem &gt;();
 	///     
 	///     Select a single value typed to the correct type:
 	///         datetime d;
-	///         d = DB.SELECT("OrderDate").FROM("Orders").WHERE("OrderID",OrderID).ExecuteScalar datetime()
+	///         d = DB.SELECT("OrderDate").FROM("Orders").WHERE("OrderID",OrderID).ExecuteScalar &lt; datetime &gt;()
 	/// 
-	/// It has several other Execute methods to retreive DataReaders, DataSets, and many others. Also has ExecuteNonQuery for executing 
+	/// It has several other Execute methods to retrieve DataReaders, DataSets, and many others. Also has ExecuteNonQuery for executing 
 	/// void queries.
 	/// </summary>
 	public class SqlHelper
@@ -44,10 +45,17 @@ namespace BigfootSQL.Core
 		StringBuilder _sql = new StringBuilder();
 		List<DbParameter> _params = new List<DbParameter>();
 		public string ConnectionString;
+		/// <summary>
+		/// Provider factory to be used 
+		/// </summary>
+		public DbProviderFactory ProviderFactory = null;
 		
-		// See more constructors bellow for dotnetnuke integration
-		public SqlHelper(){}
-		public SqlHelper(string connectionString)
+		public SqlHelper(DbProviderFactory providerFactory = null)
+		{
+			if (providerFactory == null) providerFactory = SqlClientFactory.Instance;
+			ProviderFactory = providerFactory;	
+		}
+		public SqlHelper(string connectionString, DbProviderFactory providerFactory = null) : this(providerFactory)
 		{
 			ConnectionString = connectionString;
 		}
@@ -59,7 +67,7 @@ namespace BigfootSQL.Core
 
 		/// <summary>
 		/// Adds a parameter with the provided value and returns the created parameter name
-		/// Used when creating dynamic queries and the parameter is not important outside of the inmediate query
+		/// Used when creating dynamic queries and the parameter is not important outside of the immediate query
 		/// Used internally to auto created parameters for the WHERE AND OR and other statements
 		/// </summary>
 		/// <param name="value">The value of the parameter</param>
@@ -131,6 +139,7 @@ namespace BigfootSQL.Core
 			// Determine if the value is null
 			bool isnull = false;
 			if (value != null && value is DateTime && (DateTime)value == DateTime.MinValue) isnull = true;
+			if (value != null && value is DateTimeOffset && (DateTimeOffset)value == DateTimeOffset.MinValue) isnull = true;
 			//if (value != null && value is int && (int)value == 0) isnull = true;
 				
 			// DateTime.MinValue will be considered a null value
@@ -883,12 +892,15 @@ namespace BigfootSQL.Core
 				{
 					var dbValue = "";
 					var addQuotes = (param.DbType == DbType.String ||
-									 param.DbType == DbType.DateTime);
+									 param.DbType == DbType.DateTime ||
+					                 param.DbType == DbType.DateTimeOffset);
 					dbValue = param.Value == null ? "NULL" : EscapeApostrophe(param.Value.ToString());
 					if (addQuotes && dbValue != "NULL") dbValue = "'" + dbValue + "'";
 					if (param.DbType == DbType.Boolean)
 						dbValue = dbValue == "False" ? "0" : "1";
 					if (param.DbType == DbType.DateTime && dbValue != "NULL" && (DateTime)param.Value == DateTime.MinValue)
+						dbValue = "NULL";
+					if (param.DbType == DbType.DateTimeOffset && dbValue != "NULL" && (DateTimeOffset)param.Value == DateTimeOffset.MinValue)
 						dbValue = "NULL";
 
 					var dbTypeName = param.DbType.ToString();
@@ -896,6 +908,8 @@ namespace BigfootSQL.Core
 						dbTypeName = "nvarchar(max)";
 					else if (param.DbType == DbType.Int32)
 						dbTypeName = "int";
+					else if (param.DbType == DbType.DateTimeOffset)
+						dbTypeName = "DateTimeOffset";
 					else if (param.DbType == DbType.DateTime)
 						dbTypeName = "DateTime";
 					else if (param.DbType == DbType.Boolean)
@@ -1524,48 +1538,18 @@ namespace BigfootSQL.Core
 			return DbExecuteReader(CommandType.Text, ToString(), _params.ToArray());
 		}
 
-		/// <summary>
-		/// Executes the query and returns a filled Dataset with the resultset
-		/// </summary>
-		/// <returns>A dataset</returns>
-		public DataSet ExecuteDataset()
-		{
-		   return DbExecuteDataset(CommandType.Text, ToString(), _params.ToArray());
-		}
-
-		/// <summary>
-		/// Executes ther query and adds the results to the provided dataset
-		/// </summary>
-		/// <param name="data">The dataset to fill with this query</param>
-		/// <returns>The dataset passed in</returns>
-		public DataSet ExecuteDataset(DataSet data)
-		{
-			var localdata = ExecuteDataset();
-
-			// Make sure the table names match
-			if (data.Tables.Count == 1 && localdata.Tables.Count == 1)
-				localdata.Tables[0].TableName = data.Tables[0].TableName;
-
-			data.Merge(localdata, false, MissingSchemaAction.Ignore);
-			return data;
-		}
-
 		#endregion
 
 
 		#region "Database Execution"
 		
 		/// <summary>
-		/// Holds the provider name for the current DbFactory Provider
-		/// </summary>
-		public string ProviderName = "System.Data.SqlClient";
-
-		/// <summary>
 		/// Returns a DbProviderFactory for the specified ProviderName
 		/// </summary>
 		public DbProviderFactory DbProviderFactory()
 		{
-			return DbProviderFactories.GetFactory(ProviderName);
+			//return DbProviderFactories.GetFactory(ProviderName);
+			return SqlClientFactory.Instance;
 		}
 
 		/// <summary>
@@ -1659,42 +1643,6 @@ namespace BigfootSQL.Core
 			{
 				DisposeDbCommand(cmd);
 			}
-		}
-
-		/// <summary>
-		/// Execute a DbCommand using the provided parameters.
-		/// </summary>
-		/// <param name="commandType">The CommandType (stored procedure, text, etc.)</param>
-		/// <param name="commandText">The stored procedure name or T-SQL command</param>
-		/// <param name="commandParameters">An array of SqlParamters used to execute the command</param>
-		/// <returns>A dataset containing the resultset generated by the command</returns>
-		public DataSet DbExecuteDataset(CommandType commandType, string commandText, params DbParameter[] commandParameters)
-		{
-			// Create a command and prepare it for execution
-			var cmd = CreateDbCommand(commandType, commandText, commandParameters);
-			
-			try
-			{
-				var ds = new DataSet();
-
-				// Create the DataAdapter & DataSet
-				var da = DbProviderFactory().CreateDataAdapter();
-				da.SelectCommand = cmd;
-
-				// Fill the DataSet using default values for DataTable names, etc
-				da.Fill(ds);
-
-				// Detach the DbParameters from the command object, so they can be used again
-				cmd.Parameters.Clear();
-
-				// Return the dataset
-				return ds;
-			}
-			finally
-			{
-				DisposeDbCommand(cmd);
-			}
-
 		}
 
 		/// <summary>
