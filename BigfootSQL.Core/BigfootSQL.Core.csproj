@@ -21,9 +21,9 @@
         
         <UserSecretsId>5b1d8709-3ac5-4433-b1c3-83200a6125cd</UserSecretsId>
         
-        <Version>2.0.0</Version>
+        <Version>2.1.0</Version>
         
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <AssemblyVersion>2.1.0.0</AssemblyVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
