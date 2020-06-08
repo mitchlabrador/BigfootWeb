@@ -1,3 +1,4 @@
+using Microsoft.Azure.Services.AppAuthentication;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace BigfootSQL.Core
 {
@@ -41,10 +43,11 @@ namespace BigfootSQL.Core
 	{
 
 		#region "Constructors / Private variables"
-
+		private readonly bool _useAzureServiceTokenProvider;
 		StringBuilder _sql = new StringBuilder();
 		List<DbParameter> _params = new List<DbParameter>();
 		public string ConnectionString;
+
 		/// <summary>
 		/// Provider factory to be used 
 		/// </summary>
@@ -58,6 +61,16 @@ namespace BigfootSQL.Core
 		public SqlHelper(string connectionString, DbProviderFactory providerFactory = null) : this(providerFactory)
 		{
 			ConnectionString = connectionString;
+		}
+		/// <summary>
+		/// Constructor with MSI option
+		/// </summary>
+		/// <param name="connectionString">Connection string</param>
+		/// <param name="useAzureServiceTokenProvider">Option to use Azure manage identity</param>
+		public SqlHelper(string connectionString, bool useAzureServiceTokenProvider)
+		{
+			ConnectionString = connectionString;
+			_useAzureServiceTokenProvider = useAzureServiceTokenProvider;
 		}
 
 		#endregion
@@ -152,6 +165,70 @@ namespace BigfootSQL.Core
 				param.Value = value;    
 			}
 			_params.Add(param);
+			return this;
+		}
+
+		/// <summary>
+		/// Adds an output parameter to the query
+		/// </summary>
+		/// <param name="name">The name of the parameter</param>
+		/// <param name="paramType">The parameter type</param>
+		/// <param name="addComma">The value of the paremter</param>
+		public SqlHelper AddOutputParam(string name, DbType paramType, bool addComma = false)
+		{
+			if (!name.StartsWith("@"))
+				name = "@" + name;
+
+			var param = DbProviderFactory().CreateParameter();
+			param.ParameterName = name.StartsWith("@") ? name.Substring(1) : name;
+			param.Direction = ParameterDirection.Output;
+			param.DbType = paramType;
+
+			// set varchar size to max
+			if (paramType == DbType.String)
+				param.Size = -1;
+
+			_params.Add(param);
+			Add((addComma ? ", " : "") + name + " = " + name + " OUTPUT");
+			return this;
+		}
+
+		/// <summary>
+		/// Adds an InputOutput parameter to the query
+		/// </summary>
+		/// <param name="name">The name of the parameter</param>
+		/// <param name="paramType">The parameter type</param>
+		/// <param name="addComma">The value of the paremter</param>
+		public SqlHelper AddInputOutputParam(string name, DbType paramType, object value, bool addComma = false)
+		{
+			if (!name.StartsWith("@"))
+				name = "@" + name;
+
+			var param = DbProviderFactory().CreateParameter();
+			param.ParameterName = name.StartsWith("@") ? name.Substring(1) : name;
+			param.Direction = ParameterDirection.InputOutput;
+			param.DbType = paramType;
+
+			// set varchar size to max
+			if (paramType == DbType.String)
+				param.Size = -1;
+
+			// Determine if the value is null
+			bool isnull = false;
+			if (value != null && value is DateTime && (DateTime)value == DateTime.MinValue) isnull = true;
+
+			// DateTime.MinValue will be considered a null value
+			if (isnull)
+			{
+				param.Value = DBNull.Value;
+			}
+			else
+			{
+				param.Value = value;
+			}
+
+			_params.Add(param);
+			Add((addComma ? ", " : "") + name + " = " + name + " OUTPUT");
 			return this;
 		}
 
@@ -1336,6 +1413,21 @@ namespace BigfootSQL.Core
 		}
 
 		/// <summary>
+		/// Executes the query and returns a Scalar value
+		/// </summary>
+		/// <returns>Object (null when dbnull value is returned)</returns>
+		public async Task<object> ExecuteScalarAsync()
+		{
+			var rvalue = await DbExecuteScalarAsync(CommandType.Text, ToString(), _params.ToArray());
+
+			if (rvalue == DBNull.Value) rvalue = null;
+
+			return rvalue;
+		}
+
+		
+
+		/// <summary>
 		/// Executes the query and returns a Scalar value for the specific generic value
 		/// </summary>
 		/// <returns>A typed object of T</returns>
@@ -1349,6 +1441,22 @@ namespace BigfootSQL.Core
 			}
 			
 			return default(T);
+		}
+
+		/// <summary>
+		/// Executes the query and returns a Scalar value for the specific generic value
+		/// </summary>
+		/// <returns>A typed object of T</returns>
+		public async Task<T> ExecuteScalarAsync<T>()
+		{
+			var rvalue = await ExecuteScalarAsync();
+			if (rvalue != null)
+			{
+				var tc = TypeDescriptor.GetConverter(typeof(T));
+				return (T)tc.ConvertFromInvariantString(rvalue.ToString());
+			}
+
+			return default;
 		}
 
 		/// <summary>
@@ -1372,9 +1480,35 @@ namespace BigfootSQL.Core
 		/// <summary>
 		/// Executes the query and returns a sclar value of type int
 		/// </summary>
+		public async Task<int> ExecuteScalarIntAsync()
+		{
+			return await ExecuteScalarAsync<int>();
+		}
+
+		/// <summary>
+		/// Appends a SELECT @@IDENTITY statement to the query and then executes
+		/// </summary>
+		/// <returns>The identity of the just inserted record</returns>
+		public async Task<int> ExecuteScalarIdentityAsync()
+		{
+			SELECT_IDENTITY();
+			return await ExecuteScalarIntAsync();
+		}
+
+		/// <summary>
+		/// Executes the query and returns a sclar value of type int
+		/// </summary>
 		public decimal ExecuteScalarDecimal()
 		{
 			return ExecuteScalar<decimal>();
+		}
+
+		/// <summary>
+		/// Executes the query and returns a sclar value of type int
+		/// </summary>
+		public async Task<decimal> ExecuteScalarDecimalAsync()
+		{
+			return await ExecuteScalarAsync<decimal>();
 		}
 
 		/// <summary>
@@ -1386,11 +1520,27 @@ namespace BigfootSQL.Core
 		}
 
 		/// <summary>
+		/// Executes the query and returns a scalar value of type bool
+		/// </summary>
+		public async Task<bool> ExecuteScalarBoolAsync()
+		{
+			return await ExecuteScalarAsync<bool>();
+		}
+
+		/// <summary>
 		/// Executes the query and returns a sclar value of type string
 		/// </summary>
 		public string ExecuteScalarString()
 		{
 			return ExecuteScalar<string>();
+		}
+
+		/// <summary>
+		/// Executes the query and returns a sclar value of type string
+		/// </summary>
+		public async Task<string> ExecuteScalarStringAsync()
+		{
+			return await ExecuteScalarAsync<string>();
 		}
 
 		/// <summary>
@@ -1401,6 +1551,16 @@ namespace BigfootSQL.Core
 		public SqlRecord ExecuteSqlRecord()
 		{
 			return new SqlRecord(ExecuteValues());
+		}
+
+		/// <summary>
+		/// Returns a SqlRecord. Works like Scalar except it can 
+		/// return multiple fields values for the first record of the resultset
+		/// </summary>
+		/// <returns>Dictionary with FieldName, Value</returns>
+		public async Task<SqlRecord> ExecuteSqlRecordAsync()
+		{
+			return new SqlRecord(await ExecuteValuesAsync());
 		}
 
 		/// <summary>
@@ -1441,11 +1601,56 @@ namespace BigfootSQL.Core
 		}
 
 		/// <summary>
+		/// Returns a List of SqlRecord objects. 
+		/// </summary>
+		/// <returns>SqlRecord with a Dictionary data property with FieldName, Value</returns>
+		public async Task<List<SqlRecord>> ExecuteSqlRecordCollectionAsync()
+		{
+			using (var reader = await ExecuteReaderAsync())
+			{
+				var list = new List<SqlRecord>();
+
+				while (reader.Read())
+				{
+					var values = new Dictionary<string, object>();
+					for (int i = 0; i < reader.FieldCount; i++)
+					{
+						try
+						{
+							var key = reader.GetName(i);
+							object value = null;
+							if (reader.IsDBNull(i) == false)
+							{
+								value = reader[i];
+							}
+							values.Add(key, value);
+						}
+						catch (IndexOutOfRangeException)
+						{
+							continue;
+						}
+					}
+					list.Add(new SqlRecord(values));
+				}
+
+				return list;
+			}
+		}
+
+		/// <summary>
 		/// Executes a query that does not return a value
 		/// </summary>
 		public int ExecuteNonquery()
 		{
 			return DbExecuteNonQuery(CommandType.Text, ToString(), _params.ToArray());
+		}
+
+		/// <summary>
+		/// Executes a query that does not return a value
+		/// </summary>
+		public async Task<int> ExecuteNonqueryAsync()
+		{
+			return await DbExecuteNonQueryAsync(CommandType.Text, ToString(), _params.ToArray());
 		}
 
 		/// <summary>
@@ -1459,6 +1664,19 @@ namespace BigfootSQL.Core
 			{
 				return FillObject<T>(reader);    
 			}            
+		}
+
+		/// <summary>
+		/// Executes a query and hydrates an object with the result
+		/// </summary>
+		/// <typeparam name="T">The type of the object to hydrate and return</typeparam>
+		/// <returns>I hydrated object of the type specified</returns>
+		public async Task<T> ExecuteObjectAsync<T>()
+		{
+			using (var reader = await ExecuteReaderAsync())
+			{
+				return FillObject<T>(reader);
+			}
 		}
 
 		/// <summary>
@@ -1495,6 +1713,39 @@ namespace BigfootSQL.Core
 		}
 
 		/// <summary>
+		/// Returns a dictionary of FieldName. Works like Scalar except it can 
+		/// return multiple fields values for the first record of the resultset
+		/// </summary>
+		/// <returns>Dictionary with FieldName, Value</returns>
+		public async Task<Dictionary<string, object>> ExecuteValuesAsync()
+		{
+			using (var reader = await ExecuteReaderAsync())
+			{
+				Dictionary<string, object> values = null;
+				if (reader.Read() == false) { return values; }
+				values = new Dictionary<string, object>();
+				for (int i = 0; i < 100; i++)
+				{
+					try
+					{
+						var key = reader.GetName(i);
+						object value = null;
+						if (reader.IsDBNull(i) == false)
+						{
+							value = reader[i];
+						}
+						values.Add(key, value);
+					}
+					catch (IndexOutOfRangeException)
+					{
+						return values;
+					}
+				}
+				return values;
+			}
+		}
+
+		/// <summary>
 		/// Executes the query and returnes a collection of strings. 
 		/// Useful when needing a quick lookup set of values
 		/// </summary>
@@ -1502,6 +1753,28 @@ namespace BigfootSQL.Core
 		public List<string> ExecuteStringCollection()
 		{
 			using (var reader = ExecuteReader())
+			{
+				List<string> values = null;
+				while (reader.Read())
+				{
+					if (reader.IsDBNull(0) == false)
+					{
+						if (values == null) values = new List<string>();
+						values.Add(reader[0].ToString());
+					}
+				}
+				return values;
+			}
+		}
+
+		/// <summary>
+		/// Executes the query and returns a collection of strings. 
+		/// Useful when needing a quick lookup set of values
+		/// </summary>
+		/// <returns>A string collection</returns>
+		public async Task<List<string>> ExecuteStringCollectionAsync()
+		{
+			using (var reader = await ExecuteReaderAsync())
 			{
 				List<string> values = null;
 				while (reader.Read())
@@ -1531,6 +1804,20 @@ namespace BigfootSQL.Core
 		}
 
 		/// <summary>
+		/// Executes the query and maps the results to a collection of objects 
+		/// of the type specified through the generic argument
+		/// </summary>
+		/// <typeparam name="T">The of object for the collection</typeparam>
+		/// <returns>A collection of T</returns>
+		public async Task<List<T>> ExecuteCollectionAsync<T>()
+		{
+			using (var reader = await ExecuteReaderAsync())
+			{
+				return FillCollection<T>(reader);
+			}
+		}
+
+		/// <summary>
 		/// Executes the query and returns a DataReader
 		/// </summary>
 		public DbDataReader ExecuteReader()
@@ -1538,11 +1825,19 @@ namespace BigfootSQL.Core
 			return DbExecuteReader(CommandType.Text, ToString(), _params.ToArray());
 		}
 
+		/// <summary>
+		/// Executes the query and returns a DataReader
+		/// </summary>
+		public async Task<DbDataReader> ExecuteReaderAsync()
+		{
+			return await DbExecuteReaderAsync(CommandType.Text, ToString(), _params.ToArray());
+		}
+
 		#endregion
 
 
 		#region "Database Execution"
-		
+
 		/// <summary>
 		/// Returns a DbProviderFactory for the specified ProviderName
 		/// </summary>
@@ -1557,10 +1852,26 @@ namespace BigfootSQL.Core
 		/// </summary>
 		public DbConnection CreateDbConnection(bool openConnection)
 		{
-			var conn = DbProviderFactory().CreateConnection();
-			conn.ConnectionString = ConnectionString;
-			if (openConnection) conn.Open();
-			return conn;
+			if (_useAzureServiceTokenProvider)
+			{
+				var isDev = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT").Equals("development", StringComparison.InvariantCultureIgnoreCase);
+				var conn = DbProviderFactory().CreateConnection() as SqlConnection;
+				conn.ConnectionString = ConnectionString;
+				var providerConnString = $"{ConnectionString.Trim().TrimEnd(';')}{(isDev ? ";RunAs=Developer;DeveloperTool=VisualStudio" : ";RunAs=App;")}";
+				var provider = new AzureServiceTokenProvider(providerConnString);
+				var token = provider.GetAccessTokenAsync("https://database.windows.net/").Result;
+				conn.AccessToken = token;
+				if (openConnection) conn.Open();
+				return conn;
+			}
+			else
+			{
+				var conn = DbProviderFactory().CreateConnection();
+				conn.ConnectionString = ConnectionString;
+				if (openConnection) conn.Open();
+				return conn;
+			}
+			
 		}
 		
 		/// <summary>
@@ -1646,6 +1957,36 @@ namespace BigfootSQL.Core
 		}
 
 		/// <summary>
+		/// Execute a DbCommand (that returns no resultset) using the provided parameters.
+		/// </summary>
+		/// <param name="commandType">The CommandType (stored procedure, text, etc.)</param>
+		/// <param name="commandText">The stored procedure name or T-SQL command</param>
+		/// <param name="commandParameters">An array of SqlParamters used to execute the command</param>
+		/// <returns>An int representing the number of rows affected by the command</returns>
+		public async Task<int> DbExecuteNonQueryAsync(CommandType commandType, string commandText, params DbParameter[] commandParameters)
+		{
+			// Create a command and prepare it for execution
+			var cmd = CreateDbCommand(commandType, commandText, commandParameters);
+
+			try
+			{
+				// Finally, execute the command
+				var retval = await cmd.ExecuteNonQueryAsync();
+
+				// Detach the DbParameters from the command object, so they can be used again
+				cmd.Parameters.Clear();
+
+				// Return the value
+				return retval;
+			}
+			finally
+			{
+				DisposeDbCommand(cmd);
+			}
+		}
+
+
+		/// <summary>
 		/// Execute a DbCommand using the provided parameters.
 		/// </summary>
 		/// <param name="commandType">The CommandType (stored procedure, text, etc.)</param>
@@ -1665,6 +2006,35 @@ namespace BigfootSQL.Core
 				// Detach the DbParameters from the command object, so they can be used again
 				cmd.Parameters.Clear();
 			
+				return retval;
+
+			}
+			finally
+			{
+				DisposeDbCommand(cmd);
+			}
+		}
+
+		/// <summary>
+		/// Execute a DbCommand using the provided parameters.
+		/// </summary>
+		/// <param name="commandType">The CommandType (stored procedure, text, etc.)</param>
+		/// <param name="commandText">The stored procedure name or T-SQL command</param>
+		/// <param name="commandParameters">An array of SqlParamters used to execute the command</param>
+		/// <returns>An object containing the value in the 1x1 resultset generated by the command</returns>
+		public async Task<object> DbExecuteScalarAsync(CommandType commandType, string commandText, params DbParameter[] commandParameters)
+		{
+			// Create a command and prepare it for execution
+			var cmd = CreateDbCommand(commandType, commandText, commandParameters);
+
+			try
+			{
+				// Execute the command & return the results
+				var retval = await cmd.ExecuteScalarAsync();
+
+				// Detach the DbParameters from the command object, so they can be used again
+				cmd.Parameters.Clear();
+
 				return retval;
 
 			}
@@ -1711,11 +2081,48 @@ namespace BigfootSQL.Core
 				throw;
 			}
 		}
-		
+
+		/// <summary>
+		/// Create and prepare a DbCommand, and call ExecuteReader with the appropriate CommandBehavior.
+		/// </summary>
+		/// <param name="commandType">The CommandType (stored procedure, text, etc.)</param>
+		/// <param name="commandText">The stored procedure name or T-SQL command</param>
+		/// <param name="commandParameters">An array of DbParameters to be associated with the command or 'null' if no parameters are required</param>
+		/// <returns>SqlDataReader containing the results of the command</returns>
+		public async Task<DbDataReader> DbExecuteReaderAsync(CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
+		{
+			// Create a command and prepare it for execution
+			var cmd = CreateDbCommand(commandType, commandText, commandParameters);
+			try
+			{
+				var reader = await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection);
+
+				// Detach the DbParameters from the command object, so they can be used again.
+				// HACK: There is a problem here, the output parameter values are fletched 
+				// when the reader is closed, so if the parameters are detached from the command
+				// then the SqlReader can't set its values. 
+				// When this happen, the parameters can´t be used again in other command.
+				var canClear = true;
+				foreach (DbParameter commandParameter in cmd.Parameters)
+				{
+					if (commandParameter.Direction != ParameterDirection.Input)
+						canClear = false;
+				}
+				if (canClear) cmd.Parameters.Clear();
+
+				return reader;
+			}
+			catch
+			{
+				DisposeDbCommand(cmd);
+				throw;
+			}
+		}
+
 		#endregion
 
 
-	   #region "Object Hydration"
+		#region "Object Hydration"
 
 		#region "Cache"
 
@@ -2190,5 +2597,17 @@ namespace BigfootSQL.Core
 
 		#endregion
 
+	}
+
+	public static class SqlHelperExtensions
+	{
+		public static SqlHelper EXISTS_IN_TABLE(this SqlHelper sqlHelper, string tableName, Func<SqlHelper, SqlHelper> whereAction)
+		{
+			sqlHelper.Add("IF EXISTS (SELECT 1 FROM ").Add(tableName);
+			whereAction(sqlHelper);
+			sqlHelper.CloseParenthesis();
+			sqlHelper.Add("SELECT 1 ELSE SELECT 0");
+			return sqlHelper;
+		}
 	}
 }
