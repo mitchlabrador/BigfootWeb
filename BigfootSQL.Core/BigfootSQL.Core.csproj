@@ -11,7 +11,7 @@
         <RepositoryType>git</RepositoryType>
         <ProjectGuid>d26e48a7-5c65-4a88-b3a7-551921c7e349</ProjectGuid>
         
-        <PackageVersion>2.0.0</PackageVersion>
+        <PackageVersion>2.1.0</PackageVersion>
         
         <Authors>Mitch Labrador</Authors>
         
