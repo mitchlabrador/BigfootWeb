@@ -63,7 +63,7 @@ namespace BigfootSQL.Core
 			ConnectionString = connectionString;
 		}
 		/// <summary>
-		/// Constructor with MSI option
+		/// Constructor with options to user Azure service token provider
 		/// </summary>
 		/// <param name="connectionString">Connection string</param>
 		/// <param name="useAzureServiceTokenProvider">Option to use Azure manage identity</param>
