@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Mitch Labrador</Authors>
+    <Company>Mitmar</Company>
+    <Product>BigfootWeb</Product>
+    <Description>This is a list of utilities that may be used</Description>
+    <PackageProjectUrl>https://github.com/mitchlabrador/BigfootWeb</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mitchlabrador/BigfootWeb</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+</Project>

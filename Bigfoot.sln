@@ -25,6 +25,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BigfootSQL.Core", "BigfootSQL.Core\BigfootSQL.Core.csproj", "{D26E48A7-5C65-4A88-B3A7-551921C7E349}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bigfoot.Web.Core", "Bigfoot.Web.Core\Bigfoot.Web.Core.csproj", "{E623AECD-9384-4E40-92C1-B1B89763081C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bigfoot.Utils.Core", "Bigfoot.Utils.Core\Bigfoot.Utils.Core.csproj", "{8C5C2D2B-8974-4561-A04B-A7294E7908D7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +55,14 @@ Global
 		{D26E48A7-5C65-4A88-B3A7-551921C7E349}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D26E48A7-5C65-4A88-B3A7-551921C7E349}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D26E48A7-5C65-4A88-B3A7-551921C7E349}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E623AECD-9384-4E40-92C1-B1B89763081C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E623AECD-9384-4E40-92C1-B1B89763081C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E623AECD-9384-4E40-92C1-B1B89763081C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E623AECD-9384-4E40-92C1-B1B89763081C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C5C2D2B-8974-4561-A04B-A7294E7908D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C5C2D2B-8974-4561-A04B-A7294E7908D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C5C2D2B-8974-4561-A04B-A7294E7908D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C5C2D2B-8974-4561-A04B-A7294E7908D7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
