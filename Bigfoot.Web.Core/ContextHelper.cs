@@ -13,12 +13,12 @@ using System.Web;
 
 namespace Bigfoot.Web.Core
 {
-    public class AspNetContext : IContext
+    public class ContextHelper : IContextHelper
     {       
         private readonly IHttpContextAccessor _httpContextAccessor;
         public HttpContext Context => _httpContextAccessor.HttpContext;
         
-        public AspNetContext(IHttpContextAccessor httpContextAccessor)
+        public ContextHelper(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;            
         }
@@ -26,7 +26,7 @@ namespace Bigfoot.Web.Core
         public PostHelper Post => _post ?? (_post = new PostHelper(this));
         PostHelper _post;
 
-        public string ApplicationPath => Context.Request.PathBase; 
+        public string ApplicationPathBase => Context.Request.PathBase; 
         
         public string Host => Context.Request.Host.Host;
 
@@ -128,7 +128,7 @@ namespace Bigfoot.Web.Core
         /// <returns>Returns the full application path root including the domain name if asked.</returns>
         public string GetApplicationPath(bool includeDomain, bool https = false, bool forcehttp = false)
         {
-            var apppath = ApplicationPath;
+            var apppath = ApplicationPathBase;
             if (apppath.EndsWith("/") == false)
                 apppath += "/";
 
@@ -331,12 +331,11 @@ namespace Bigfoot.Web.Core
                 var rawurl = RawUrl;
 
                 // Build the url
-                var redirecturl = "";
                 if (string.IsNullOrEmpty(rawurl) == false && rawurl.StartsWith("/"))
                 {
                     rawurl = rawurl.Length > 1 ? rawurl.Substring(1) : "";
                 }
-                redirecturl = GetFullHostName(true) + rawurl;
+                var redirecturl = GetFullHostName(true) + rawurl;
 
                 // Redirect                
                 Redirect(redirecturl, true);

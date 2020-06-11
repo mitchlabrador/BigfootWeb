@@ -18,14 +18,14 @@ namespace Bigfoot.Web.Core
     public class PostHelper
     {
         private string cacheKey = "PostHelper_RequestValues";
-        private IContext Context;
+        private IContextHelper Context;
         
         public string Message_ExpectedValueNotFound = "Expected value not found: ";
         
         /// <summary>
         /// Creates an instance of the class using the HttpRequest specified
         /// </summary>
-        public PostHelper(IContext context)
+        public PostHelper(IContextHelper context)
         {
             Context = context;
         }

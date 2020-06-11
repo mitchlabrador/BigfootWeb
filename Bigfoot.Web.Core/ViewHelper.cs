@@ -6,13 +6,13 @@ namespace Bigfoot.Web.Core
     public class ViewHelper
     {
 
-        private IContext Context;
+        private IContextHelper Context;
                 
         /// <summary>
         /// This constructor creates a new view helper class using the request response and sever objects
         /// passed into it. This is useful when abstracting or moqing these objects
         /// </summary>
-        public ViewHelper(IContext context)
+        public ViewHelper(IContextHelper context)
         {
             Context = context;
         }

@@ -9,31 +9,82 @@ using System.Threading.Tasks;
 
 namespace Bigfoot.Web.Core
 {
-    public interface IContext
+    public interface IContextHelper
     {
-
+        /// <summary>
+        /// These are the items stored in the context cache
+        /// </summary>
         IDictionary<object, object> Items { get; }
-
-        string ApplicationPath { get; }
+        /// <summary>
+        /// Retrieves the application root if not at the root of the domain.
+        /// http://localhost:3000/foo/bar return String.Empty because the application is running at the root, and /foo/bar is part of the Path within the application
+        /// Doc: https://stackoverflow.com/questions/58614864/whats-the-difference-between-httprequest-path-and-httprequest-pathbase-in-asp-n
+        /// </summary>
+        string ApplicationPathBase { get; }
+        /// <summary>
+        /// Determines if the current connection is secure
+        /// </summary>
         bool IsSecureConnection { get; }
+        /// <summary>
+        /// Gets the headers from the request
+        /// </summary>
         IHeaderDictionary Headers { get; }
+        /// <summary>
+        /// Gets back the complete RAW url (not decoded)
+        /// </summary>
         string RawUrl { get; }
+        /// <summary>
+        /// Returns the Query string
+        /// </summary>
         IQueryCollection QueryString { get; }
+        /// <summary>
+        /// Gets the form in the case a form was uploaded
+        /// </summary>
         IFormCollection Form { get; }
+        /// <summary>
+        /// Gets all files uploaded
+        /// </summary>
         IFormFileCollection Files { get; }
+        /// <summary>
+        /// Current request host e.g. https://www.microsoft.com:5360/subpage/another = www.microsoft.com
+        /// </summary>
         string Host { get; }
+        /// <summary>
+        /// Gets the port being used if specified in the url 
+        ///     e.g. https://www.microsoft.com:5360/subpage/another = 5360
+        ///          https://www.google.com = NULL
+        /// </summary>
         int? Port { get; }
 
+        /// <summary>
+        /// End the response and redirect the user to the provided url
+        /// </summary>
+        /// <param name="url">Url to send the user to</param>
+        /// <param name="endResponse">Stop executing on the response</param>
         void Redirect(string url, bool endResponse);
 
+        /// <summary>
+        /// This is the application Path: "~/"
+        /// </summary>
         string AppPath { get; }
-
+        /// <summary>
+        /// Default Path to CSS: AppPath + "Content/"
+        /// </summary>
         string CssPath { get; }
-
+        /// <summary>
+        /// Default Scripts Path: AppPath + "Scripts/"
+        /// </summary>
         string ScriptsPath { get; }
-
+        /// <summary>
+        /// Default Images Path: AppPath + "Content/images/"
+        /// </summary>
         string ImagesPath { get; }
 
+        /// <summary>
+        /// This helper helps you to deal with the strongly typed collection of values from the request.
+        /// It also allows for you to pass in manual values, which is useful during testing. When instantiated
+        /// with the empty constructor, it assumes that you are refering to the HttpContext.Current context
+        /// </summary>
         PostHelper Post { get; }
 
         /// <summary>
@@ -131,10 +182,24 @@ namespace Bigfoot.Web.Core
         /// <returns>A full physicial path to a unique file name that may be used in the specified path</returns>
         string GetUniqueFileName(string filePath);
 
+        /// <summary>
+        /// Determines if the current request was done over SSL
+        /// </summary>
         bool IsUsingSsl { get; }
 
+        /// <summary>
+        /// Determines if the user is using SSL, if not forces a redirect
+        /// </summary>
+        /// <param name="condition">Only forces the redirect if the condition is true</param>
         void RequireSsl(bool condition = true);
 
+        /// <summary>
+        /// Adds a parameter to a url and returns the updated url. If the url already has parameters it adds to it, otherwise it appends to existing parameters
+        /// </summary>
+        /// <param name="url">Url, if empty nothing happens</param>
+        /// <param name="param">Query parameter to add</param>
+        /// <param name="value">Query value. Does NOT encode</param>
+        /// <returns>The updated Url</returns>
         string AddParameterToUrl(string url, string param, string value);
 
         /// <summary>
@@ -155,10 +220,25 @@ namespace Bigfoot.Web.Core
         /// </summary>
         string ClientUrl(string urlpath, bool includeDomain, bool https = false);
 
+        /// <summary>
+        /// Determines of the context has the provided key
+        /// </summary>
+        /// <param name="key">Key to check for</param>
+        /// <returns>True if it is found</returns>
         bool HasData(string key);
 
+        /// <summary>
+        /// Gets the provided Key from the Context or NULL (does not error out)
+        /// </summary>
+        /// <param name="key">The Context Key to get</param>
+        /// <returns>The value found in the key or NULL if not found</returns>
         object GetData(string key);
 
+        /// <summary>
+        /// Add or replace this value in the Context
+        /// </summary>
+        /// <param name="key">Value Key</param>
+        /// <param name="value">Value</param>
         void SetData(string key, object value);
 
         /// <summary>
