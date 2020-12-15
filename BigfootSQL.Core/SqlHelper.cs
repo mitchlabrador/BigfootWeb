@@ -1713,6 +1713,49 @@ namespace BigfootSQL.Core
 		}
 
 		/// <summary>
+		/// Executes the query and maps the results to a collection of Dictionary<string, object> 		
+		/// </summary>		
+		/// <returns>A collection of Dictionary<string, object></returns>
+		public async Task<List<Dictionary<string, object>>> ExecuteValuesCollectionAsync()
+		{
+			var objCollection = new List<Dictionary<string, object>>();
+			using (var reader = await ExecuteReaderAsync())
+			{				
+				try
+				{
+					while (reader.Read())
+					{
+						Dictionary<string, object> values = new Dictionary<string, object>();
+						for (int i = 0; i < 100; i++)
+						{
+							try
+							{
+								var key = reader.GetName(i);
+								object value = null;
+								if (reader.IsDBNull(i) == false)
+								{
+									value = reader[i];
+								}
+								values.Add(key, value);
+							}
+							catch (IndexOutOfRangeException)
+							{
+								// ignore
+							}
+						}
+						objCollection.Add(values);						
+					}
+
+					return objCollection;
+				}
+				finally
+				{
+					DisposeReader(reader);					
+				}
+			}
+		}
+
+		/// <summary>
 		/// Returns a dictionary of FieldName. Works like Scalar except it can 
 		/// return multiple fields values for the first record of the resultset
 		/// </summary>
