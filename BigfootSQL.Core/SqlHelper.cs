@@ -2097,31 +2097,32 @@ namespace BigfootSQL.Core
 		public DbDataReader DbExecuteReader(CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
 		{
 			// Create a command and prepare it for execution
-			var cmd = CreateDbCommand(commandType, commandText, commandParameters);
-
-			try
+			using (var cmd = CreateDbCommand(commandType, commandText, commandParameters))
 			{
-				var reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
-
-				// Detach the DbParameters from the command object, so they can be used again.
-				// HACK: There is a problem here, the output parameter values are fletched 
-				// when the reader is closed, so if the parameters are detached from the command
-				// then the SqlReader can't set its values. 
-				// When this happen, the parameters can�t be used again in other command.
-				var canClear = true;
-				foreach (DbParameter commandParameter in cmd.Parameters)
+				try
 				{
-					if (commandParameter.Direction != ParameterDirection.Input)
-						canClear = false;
-				}
-				if (canClear) cmd.Parameters.Clear();
+					var reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
 
-				return reader;
-			}
-			catch
-			{
-				DisposeDbCommand(cmd);
-				throw;
+					// Detach the DbParameters from the command object, so they can be used again.
+					// HACK: There is a problem here, the output parameter values are fletched 
+					// when the reader is closed, so if the parameters are detached from the command
+					// then the SqlReader can't set its values. 
+					// When this happen, the parameters can�t be used again in other command.
+					var canClear = true;
+					foreach (DbParameter commandParameter in cmd.Parameters)
+					{
+						if (commandParameter.Direction != ParameterDirection.Input)
+							canClear = false;
+					}
+					if (canClear) cmd.Parameters.Clear();
+
+					return reader;
+				}
+				catch
+				{
+					DisposeDbCommand(cmd);
+					throw;
+				}
 			}
 		}
 
@@ -2135,30 +2136,32 @@ namespace BigfootSQL.Core
 		public async Task<DbDataReader> DbExecuteReaderAsync(CommandType commandType, string commandText, IEnumerable<DbParameter> commandParameters)
 		{
 			// Create a command and prepare it for execution
-			var cmd = CreateDbCommand(commandType, commandText, commandParameters);
-			try
+			using (var cmd = CreateDbCommand(commandType, commandText, commandParameters))
 			{
-				var reader = await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection);
-
-				// Detach the DbParameters from the command object, so they can be used again.
-				// HACK: There is a problem here, the output parameter values are fletched 
-				// when the reader is closed, so if the parameters are detached from the command
-				// then the SqlReader can't set its values. 
-				// When this happen, the parameters can´t be used again in other command.
-				var canClear = true;
-				foreach (DbParameter commandParameter in cmd.Parameters)
+				try
 				{
-					if (commandParameter.Direction != ParameterDirection.Input)
-						canClear = false;
-				}
-				if (canClear) cmd.Parameters.Clear();
+					var reader = await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection);
 
-				return reader;
-			}
-			catch
-			{
-				DisposeDbCommand(cmd);
-				throw;
+					// Detach the DbParameters from the command object, so they can be used again.
+					// HACK: There is a problem here, the output parameter values are fletched 
+					// when the reader is closed, so if the parameters are detached from the command
+					// then the SqlReader can't set its values. 
+					// When this happen, the parameters can´t be used again in other command.
+					var canClear = true;
+					foreach (DbParameter commandParameter in cmd.Parameters)
+					{
+						if (commandParameter.Direction != ParameterDirection.Input)
+							canClear = false;
+					}
+					if (canClear) cmd.Parameters.Clear();
+
+					return reader;
+				}
+				catch
+				{
+					DisposeDbCommand(cmd);
+					throw;
+				}
 			}
 		}
 
