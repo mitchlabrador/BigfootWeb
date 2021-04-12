@@ -2119,12 +2119,9 @@ namespace BigfootSQL.Core
 				return reader;
 			}
 			catch
-			{				
-				throw;
-			}
-			finally
 			{
 				DisposeDbCommand(cmd);
+				throw;
 			}
 		}
 
@@ -2159,12 +2156,9 @@ namespace BigfootSQL.Core
 				return reader;
 			}
 			catch
-			{	
-				throw;
-			}
-			finally
 			{
-				DisposeDbCommand(cmd);				
+				DisposeDbCommand(cmd);
+				throw;
 			}
 		}
 
